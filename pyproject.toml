@@ -4,9 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "frappe_custom_app"
-dependencies = [
-    "frappe"
-]
+dependencies = []
 dynamic = ["version", "description"]
 
 [tool.bench.frappe-dependencies]
