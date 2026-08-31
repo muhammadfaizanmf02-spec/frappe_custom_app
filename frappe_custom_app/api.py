@@ -2,6 +2,9 @@ import frappe
 from frappe import _
 from frappe.utils import flt, nowdate
 
+from erpnext.accounts.party import get_party_account
+from erpnext.accounts.doctype.mode_of_payment.mode_of_payment import get_bank_cash_account
+
 
 @frappe.whitelist()
 def create_booking_order(customer, items, delivery_date, advance_amount=0, mode_of_payment="Cash", company=None):
@@ -59,21 +62,33 @@ def create_booking_order(customer, items, delivery_date, advance_amount=0, mode_
 
     pe_name = None
     if advance_amount > 0:
+        paid_from = get_party_account("Customer", customer, company)
+        bank_cash_account = get_bank_cash_account(mode_of_payment, company)
+        paid_to = bank_cash_account.get("account") if bank_cash_account else None
+
+        if not paid_to:
+            frappe.throw(_("Could not find an account for Mode of Payment {0}. Please set a default account for it.").format(mode_of_payment))
+
         pe = frappe.new_doc("Payment Entry")
         pe.payment_type = "Receive"
         pe.company = company
         pe.party_type = "Customer"
         pe.party = customer
+        pe.paid_from = paid_from
+        pe.paid_to = paid_to
+        pe.paid_from_account_currency = frappe.db.get_value("Account", paid_from, "account_currency")
+        pe.paid_to_account_currency = frappe.db.get_value("Account", paid_to, "account_currency")
         pe.paid_amount = advance_amount
         pe.received_amount = advance_amount
         pe.mode_of_payment = mode_of_payment
-        pe.reference_no = so.name
+        pe.reference_no = _("Advance for {0}").format(so.name)
         pe.reference_date = nowdate()
         pe.append("references", {
             "reference_doctype": "Sales Order",
             "reference_name": so.name,
             "allocated_amount": advance_amount
         })
+
         pe.insert()
         pe.submit()
         pe_name = pe.name
