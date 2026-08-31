@@ -69,10 +69,13 @@ function hijack_checkout_buttons() {
                 ],
                 primary_action_label: 'Confirm Booking',
                 primary_action(values) {
+                    const $primary_btn = d.get_primary_btn();
+
                     frappe.call({
                         method: "frappe_custom_app.api.create_booking_order",
                         args: {
                             customer: doc.customer,
+                            company: doc.company,
                             items: doc.items.map(i => ({
                                 item_code: i.item_code,
                                 qty: i.qty,
@@ -82,6 +85,10 @@ function hijack_checkout_buttons() {
                             advance_amount: values.advance_amount,
                             mode_of_payment: values.mode_of_payment
                         },
+                        // disables the button for the duration of the call and
+                        // re-enables it automatically on error, preventing double
+                        // submits from a slow network or an eager double-click
+                        btn: $primary_btn,
                         freeze: true,
                         freeze_message: "Booking Order ban raha hai...",
                         callback: function (r) {
