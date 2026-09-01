@@ -6,7 +6,7 @@ from erpnext.accounts.party import get_party_account
 
 
 @frappe.whitelist()
-def create_booking_order(customer, items, delivery_date, advance_amount=0, mode_of_payment="Cash", company=None):
+def create_booking_order(customer, items, delivery_date, advance_amount=0, mode_of_payment="Cash", company=None, additional_discount_percentage=0, discount_amount=0, apply_discount_on=None):
     """Create a Sales Order (and optional advance Payment Entry) for an out-of-stock
     item being booked from the POS. Runs under the calling user's own permissions so
     that only users who are actually allowed to create Sales Orders / Payment Entries
@@ -38,11 +38,15 @@ def create_booking_order(customer, items, delivery_date, advance_amount=0, mode_
     so.customer = customer
     so.company = company
     so.delivery_date = delivery_date
+    so.apply_discount_on = apply_discount_on or "Grand Total"
+    so.additional_discount_percentage = flt(additional_discount_percentage)
+    so.discount_amount = flt(discount_amount)
 
     for item in items:
         item_code = item.get("item_code")
         qty = flt(item.get("qty"))
         rate = flt(item.get("rate"))
+        discount_percentage = flt(item.get("discount_percentage"))
 
         if not item_code or qty <= 0:
             frappe.throw(_("Invalid item in cart: {0}").format(item_code or "?"))
@@ -52,6 +56,7 @@ def create_booking_order(customer, items, delivery_date, advance_amount=0, mode_
         so.append("items", {
             "item_code": item_code,
             "qty": qty,
+            "discount_percentage": discount_percentage,
             "rate": rate,
             "delivery_date": delivery_date
         })
