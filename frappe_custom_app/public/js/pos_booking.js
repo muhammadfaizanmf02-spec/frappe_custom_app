@@ -74,17 +74,17 @@ function hijack_checkout_buttons() {
 
 			const deliveryDate = document.getElementById("booking_date").value;
 			if (!deliveryDate) {
-				frappe.msgprint("Delivery Date daalain");
+				frappe.msgprint("Please enter a Delivery Date");
 				return;
 			}
 
 			const doc = cur_pos.frm.doc;
 			if (!doc.items || !doc.items.length) {
-				frappe.msgprint("Cart khali hai");
+				frappe.msgprint("Cart is empty");
 				return;
 			}
 			if (!doc.customer) {
-				frappe.msgprint("Customer select karein");
+				frappe.msgprint("Please select a Customer");
 				return;
 			}
 
@@ -117,10 +117,10 @@ function hijack_checkout_buttons() {
 						// submits from a slow network or an eager double-click
 						btn: $primary_btn,
 						freeze: true,
-						freeze_message: "Booking Order ban raha hai...",
+						freeze_message: "Booking Order is being created...",
 						callback: function (r) {
 							dialog.hide();
-							frappe.msgprint(`Booking Order <b>${r.message.sales_order}</b> ban gaya`);
+							frappe.msgprint(`Booking Order <b>${r.message.sales_order}</b> created successfully);
 							setTimeout(() => location.reload(), 1500);
 						}
 					});
