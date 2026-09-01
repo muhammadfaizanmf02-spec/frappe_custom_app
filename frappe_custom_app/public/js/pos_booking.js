@@ -106,11 +106,16 @@ function hijack_checkout_buttons() {
 							items: doc.items.map(i => ({
 								item_code: i.item_code,
 								qty: i.qty,
-								rate: i.rate
+								rate: i.rate,
+								discount_percentage: i.discount_percentage,
+								discount_amount: i.discount_amount
 							})),
 							delivery_date: deliveryDate,
 							advance_amount: values.advance_amount,
-							mode_of_payment: values.mode_of_payment
+							mode_of_payment: values.mode_of_payment,
+							additional_discount_percentage: doc.additional_discount_percentage,
+							discount_amount: doc.discount_amount,
+							apply_discount_on: doc.apply_discount_on
 						},
 						// disables the button for the duration of the call and
 						// re-enables it automatically on error, preventing double
@@ -121,6 +126,7 @@ function hijack_checkout_buttons() {
 						callback: function (r) {
 							dialog.hide();
 							frappe.msgprint(`Booking Order <b>${r.message.sales_order}</b> created successfully`);
+							frappe.utils.print("Sales Order", r.message.sales_order);
 							setTimeout(() => location.reload(), 1500);
 						}
 					});
