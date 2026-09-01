@@ -120,7 +120,7 @@ function hijack_checkout_buttons() {
 						freeze_message: "Booking Order is being created...",
 						callback: function (r) {
 							dialog.hide();
-							frappe.msgprint(`Booking Order <b>${r.message.sales_order}</b> created successfully);
+							frappe.msgprint(`Booking Order <b>${r.message.sales_order}</b> created successfully`);
 							setTimeout(() => location.reload(), 1500);
 						}
 					});
