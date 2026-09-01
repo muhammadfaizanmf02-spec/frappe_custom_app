@@ -3,7 +3,6 @@ from frappe import _
 from frappe.utils import flt, nowdate
 
 from erpnext.accounts.party import get_party_account
-from erpnext.accounts.doctype.mode_of_payment.mode_of_payment import get_bank_cash_account
 
 
 @frappe.whitelist()
@@ -63,8 +62,11 @@ def create_booking_order(customer, items, delivery_date, advance_amount=0, mode_
     pe_name = None
     if advance_amount > 0:
         paid_from = get_party_account("Customer", customer, company)
-        bank_cash_account = get_bank_cash_account(mode_of_payment, company)
-        paid_to = bank_cash_account.get("account") if bank_cash_account else None
+        paid_to = frappe.db.get_value(
+                        "Mode of Payment Account",
+                        {"parent": mode_of_payment, "company": company},
+                        "default_account",
+                )
 
         if not paid_to:
             frappe.throw(_("Could not find an account for Mode of Payment {0}. Please set a default account for it.").format(mode_of_payment))
