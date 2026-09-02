@@ -97,6 +97,7 @@ function hijack_checkout_buttons() {
 				primary_action_label: "Confirm Booking",
 				primary_action(values) {
 					const $primary_btn = dialog.get_primary_btn();
+					const print_win = window.open("", "_blank");
 
 					frappe.call({
 						method: "frappe_custom_app.api.create_booking_order",
@@ -126,7 +127,12 @@ function hijack_checkout_buttons() {
 						callback: function (r) {
 							dialog.hide();
 							frappe.msgprint(`Booking Order <b>${r.message.sales_order}</b> created successfully`);
-							frappe.utils.print("Sales Order", r.message.sales_order);
+							const print_url = frappe.urllib.get_full_url("/printview?doctype=" + encodeURIComponent("Sales Order") + "&name=" + encodeURIComponent(r.message.sales_order) + "&trigger_print=1&format=&no_letterhead=1");
+							if (print_win) {
+								print_win.location.href = print_url;
+							} else {
+								frappe.utils.print("Sales Order", r.message.sales_order);
+							}
 							setTimeout(() => location.reload(), 1500);
 						}
 					});
